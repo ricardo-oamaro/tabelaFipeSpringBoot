@@ -3,6 +3,7 @@ package br.com.carro.TabelaFipe.main;
 import br.com.carro.TabelaFipe.model.BuscaVeiculo;
 import br.com.carro.TabelaFipe.model.BuscaVeiculoPorMarca;
 import br.com.carro.TabelaFipe.model.InformacaoVeiculoEscolhido;
+import br.com.carro.TabelaFipe.model.Veiculos;
 import br.com.carro.TabelaFipe.service.ConsomeAPI;
 import br.com.carro.TabelaFipe.service.ConverterDados;
 
@@ -66,24 +67,31 @@ public class Main {
         System.out.println("Digite um trecho do nome do veículo para consulta: ");
         var nomeVeiculo = scanner.nextLine();
 
-        veiculos.stream()
+        List<BuscaVeiculo> modelosFiltrados =  veiculos.stream()
                 .filter(v -> v.nome().toUpperCase().contains(nomeVeiculo.toUpperCase()))
-                .forEach(System.out::println);
+                .toList();
 
-        System.out.println("Informe o código do veículo para consulta:");
-        var codigoVeiculo = scanner.nextLine();
+        modelosFiltrados.forEach(System.out::println);
+
+        System.out.println("Digite o cod do modelo: ");
+        var codModelo = scanner.nextLine();
+
+        json = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codModelo + "/anos");
+        List<BuscaVeiculo>  anos = List.of(converterDados.obterDados(json, BuscaVeiculo[].class));
+
+        List<Veiculos> veiculosList = new ArrayList<>();
+
+        for (var i = 0; i < anos.size(); i++) {
+            json = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codModelo + "/anos/" + anos.get(i).codigo());
+            var veiculoEscolhido = converterDados.obterDados(json, Veiculos.class);
+            veiculosList.add(veiculoEscolhido);
+        }
+
+        System.out.println("Veiculos filtrados por ano: ");
+        veiculosList.forEach(System.out::println);
 
 
-        var jsonVeiculo = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codigoVeiculo + "/anos");
-        List<BuscaVeiculo>  veiculoList = List.of(converterDados.obterDados(jsonVeiculo, BuscaVeiculo[].class));
-        veiculoList.forEach(System.out::println);
 
-        System.out.println("Informe o código do ano para consulta:");
-        var codigoAno = scanner.nextLine();
-
-        var jsonAno = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codigoVeiculo + "/anos/" + codigoAno);
-        InformacaoVeiculoEscolhido veiculoAno = converterDados.obterDados(jsonAno, InformacaoVeiculoEscolhido.class);
-        System.out.println(veiculoAno);
     }
 
 
