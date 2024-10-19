@@ -2,6 +2,7 @@ package br.com.carro.TabelaFipe.main;
 
 import br.com.carro.TabelaFipe.model.BuscaVeiculo;
 import br.com.carro.TabelaFipe.model.BuscaVeiculoPorMarca;
+import br.com.carro.TabelaFipe.model.InformacaoVeiculoEscolhido;
 import br.com.carro.TabelaFipe.service.ConsomeAPI;
 import br.com.carro.TabelaFipe.service.ConverterDados;
 
@@ -52,16 +53,39 @@ public class Main {
 
     public void exibeVeiculosPorMarca(String veiculo, String codigoMarca) {
 
-//        List<BuscaVeiculoPorMarca> veiculos = new ArrayList<>();
+        List<BuscaVeiculo> veiculos = new ArrayList<>();
 
         var json = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos");
         var veiculosPorMarca = List.of(converterDados.obterDados(json, BuscaVeiculoPorMarca.class));
 
         for (var i = 0; i < veiculosPorMarca.size(); i++) {
-            for (var j = 0; j < veiculosPorMarca.get(i).modelos().size(); j++) {
-                System.out.println(veiculosPorMarca.get(i).modelos().get(j));
-            }
+            veiculos.addAll(veiculosPorMarca.get(i).modelos());
         }
+        veiculos.forEach(System.out::println);
+
+        System.out.println("Digite um trecho do nome do veículo para consulta: ");
+        var nomeVeiculo = scanner.nextLine();
+
+        veiculos.stream()
+                .filter(v -> v.nome().toUpperCase().contains(nomeVeiculo.toUpperCase()))
+                .forEach(System.out::println);
+
+        System.out.println("Informe o código do veículo para consulta:");
+        var codigoVeiculo = scanner.nextLine();
+
+
+        var jsonVeiculo = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codigoVeiculo + "/anos");
+        List<BuscaVeiculo>  veiculoList = List.of(converterDados.obterDados(jsonVeiculo, BuscaVeiculo[].class));
+        veiculoList.forEach(System.out::println);
+
+        System.out.println("Informe o código do ano para consulta:");
+        var codigoAno = scanner.nextLine();
+
+        var jsonAno = consomeAPI.obterDados(URL + veiculo + "/marcas/" + codigoMarca + "/modelos/" + codigoVeiculo + "/anos/" + codigoAno);
+        InformacaoVeiculoEscolhido veiculoAno = converterDados.obterDados(jsonAno, InformacaoVeiculoEscolhido.class);
+        System.out.println(veiculoAno);
     }
+
+
 
 }
